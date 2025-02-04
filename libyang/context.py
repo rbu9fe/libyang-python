@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import os
-from typing import IO, Any, Iterator, Optional, Union
+from typing import IO, Any, Iterator, List, Optional, Union
 
 from _libyang import ffi, lib
 from .data import (
@@ -16,7 +16,7 @@ from .data import (
     validation_flags,
 )
 from .schema import Module, SNode, schema_in_format
-from .util import DataType, IOType, LibyangError, c2str, data_load, str2c
+from .util import DataType, IOType, LibyangError, c2str, data_load, str2c, strlist2c
 
 
 # -------------------------------------------------------------------------------------
@@ -160,10 +160,17 @@ class Context:
     def parse_module_str(self, s: str, fmt: str = "yang", features=None) -> Module:
         return self.parse_module(s, IOType.MEMORY, fmt, features)
 
-    def load_module(self, name: str) -> Module:
+    def load_module(
+        self,
+        name: str,
+        revision: Optional[str] = None,
+        features: Optional[List[str]] = None,
+    ) -> Module:
         if self.cdata is None:
             raise RuntimeError("context already destroyed")
-        mod = lib.ly_ctx_load_module(self.cdata, str2c(name), ffi.NULL, ffi.NULL)
+        mod = lib.ly_ctx_load_module(
+            self.cdata, str2c(name), str2c(revision), strlist2c(features)
+        )
         if mod == ffi.NULL:
             raise self.error("cannot load module")
 

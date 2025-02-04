@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 
 import enum
-from typing import Optional
+from typing import List, Optional
 import warnings
 
 from _libyang import ffi, lib
@@ -44,6 +44,15 @@ def c2str(c, decode: bool = True):
 def p_str2c(s: Optional[str], encode: bool = True):
     s_p = str2c(s, encode)
     return ffi.new("char **", s_p)
+
+
+# -------------------------------------------------------------------------------------
+def strlist2c(l: Optional[List[str]], encode: bool = True):
+    if l is None:
+        return ffi.NULL
+    items = [str2c(s, encode) for s in l] + [ffi.NULL]
+    c_strlist = ffi.new("char *[]", items)
+    return c_strlist
 
 
 # -------------------------------------------------------------------------------------
